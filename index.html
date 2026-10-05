@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png">
+<title>Survei Event Jalan</title>
+<style>
+:root{--bg:#f4f7f6;--c:#fff;--t:#17211f;--m:#5d6b68;--p:#0f766e;--b:#d6dfdd;--a:#b45309;--bl:#1d4ed8}
+@media(prefers-color-scheme:dark){:root{--bg:#101716;--c:#19231f;--t:#e8f0ee;--m:#97a7a3;--p:#2dd4bf;--b:#2b3a36;--a:#fbbf24;--bl:#93c5fd}}
+*{box-sizing:border-box}body{margin:0;font:16px system-ui,sans-serif;background:var(--bg);color:var(--t);padding-bottom:70px}
+header{background:#0f766e;color:#fff;padding:12px 16px;position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center}
+h1{font-size:18px;margin:0}main{padding:12px;max-width:720px;margin:auto}
+input,select,textarea,button{font:inherit;color:inherit}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--b);border-radius:8px;background:var(--c);margin:3px 0 8px}
+label{font-size:13px;color:var(--m)}
+button{border:0;border-radius:8px;padding:10px 14px;background:var(--p);color:#fff;font-weight:600}
+@media(prefers-color-scheme:dark){button{color:#06201c}}
+button.s{background:transparent;color:var(--p);border:1px solid var(--p)}button.d{background:#b91c1c;color:#fff}
+.card{background:var(--c);border:1px solid var(--b);border-radius:12px;padding:12px;margin-bottom:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}.row>*{flex:1;min-width:120px}
+.meta{font-size:12px;color:var(--m)}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--c);border-top:1px solid var(--b);z-index:6}
+nav button{flex:1;background:none;color:var(--m);border-radius:0;padding:14px 4px;font-size:13px}nav button.on{color:var(--p);box-shadow:inset 0 3px var(--p)}
+.tab{display:none}.tab.on{display:block}
+.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:4px 0 10px}
+.chips button{background:var(--c);color:var(--t);border:1px solid var(--b);padding:8px 2px;font-size:15px}
+.chips button small{display:block;font-weight:400;font-size:10px;color:var(--m);line-height:1.1}
+.chips button.on{background:var(--p);color:#fff;border-color:var(--p)}.chips button.on small{color:#e6fffb}
+.ev{font-weight:700;margin:2px 0}.ea{color:var(--a)}.eb{color:var(--bl)}
+.tw{overflow-x:auto;border:1px solid var(--b);border-radius:8px}table{border-collapse:collapse;font-size:13px;width:100%;background:var(--c)}
+th,td{border:1px solid var(--b);padding:6px 8px;white-space:nowrap;text-align:left}th{background:var(--bg);position:sticky;top:0}
+td.w{white-space:normal;min-width:160px}
+#toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:99px;display:none;z-index:9;font-size:14px}
+#bar{display:none;background:#fef3c7;color:#78350f;padding:8px 12px;border-radius:8px;margin-bottom:10px;font-size:14px}
+img.f{max-width:100%;max-height:160px;border-radius:8px}
+</style></head><body>
+<header><h1>🛣️ Survei Event Jalan</h1><span id="st" class="meta" style="color:#d1fae5"></span></header>
+<main>
+<div id="bar">Install aplikasi ke layar utama. <button id="ins" class="s" style="padding:4px 10px">Install</button></div>
+
+<section id="t1" class="tab on">
+<div class="card">
+<div class="row"><div><label>Ruas / Nama Jalan</label><input id="ruas" placeholder="mis. Jl. Tondano–Tomohon"></div>
+<div><label>Surveyor</label><input id="sv"></div></div>
+<div class="row"><div><label>Arah</label><select id="arah"><option>Naik</option><option>Turun</option></select></div>
+<div><label>Tanggal & waktu</label><input id="tgl" type="datetime-local"></div></div>
+<div class="row"><div style="flex:2"><label>STA (km+m)</label><input id="sta" placeholder="12+350" inputmode="text"></div>
+<button class="s" id="plus" style="flex:1">STA +100 m</button></div>
+<div class="ev ea">EVENT A</div><div class="chips" id="ca"></div>
+<div class="ev eb">EVENT B</div><div class="chips" id="cb"></div>
+<div id="dw" style="display:none"><label id="dl">Detail</label><select id="det"></select></div>
+<label>Keterangan</label><textarea id="ket" rows="2" placeholder="Dimensi, kondisi, catatan..."></textarea>
+<label>Koordinat GPS</label><div class="row"><input id="gp" placeholder="lat, lon" style="flex:2"><button class="s" id="bg" style="flex:1">📍 GPS</button></div>
+<label><input type="checkbox" id="auto" checked style="width:auto;margin:0 6px 0 0">Ambil GPS otomatis saat simpan</label>
+<div style="margin-top:8px"><label>Foto (opsional)</label><input id="ft" type="file" accept="image/*" capture="environment"><img id="pv" class="f" style="display:none"></div>
+<div class="row"><button id="sim" style="flex:2">＋ Simpan & isi lagi</button><button class="s" id="rst">Kosongkan</button></div>
+<p class="meta" id="info"></p>
+</div></section>
+
+<section id="t2" class="tab">
+<div class="row"><input id="q" placeholder="🔍 Cari / filter..."><select id="fk"><option value="">Semua kode</option></select></div>
+<p class="meta" id="cnt"></p><div class="tw"><table id="tb"></table></div></section>
+
+<section id="t3" class="tab">
+<div class="card"><b>Kirim data</b>
+<label>Nomor WhatsApp tujuan (opsional, format 628xxx)</label><input id="wa" inputmode="tel">
+<label>Email tujuan (opsional)</label><input id="em" type="email">
+<label><input type="checkbox" id="bl" style="width:auto;margin:0 6px 0 0">Hanya data yang belum terkirim</label>
+<div class="row"><button id="shf" style="flex:2">📎 Bagikan file Excel (WhatsApp / Email)</button></div>
+<div class="row" style="margin-top:8px"><button class="s" id="swa">WhatsApp (ringkasan)</button><button class="s" id="sem">Email (ringkasan)</button></div>
+<p class="meta">“Bagikan file” membuka menu Android, lalu pilih WhatsApp atau Gmail. Tombol ringkasan hanya mengirim teks; untuk email, lampirkan file hasil unduhan.</p></div>
+<div class="card"><b>Database Excel</b>
+<div class="row" style="margin-top:6px"><button class="s" id="dx">⬇ Unduh .xlsx</button><button class="s" id="ix">⬆ Impor .xlsx</button></div>
+<input type="file" id="fx" accept=".xlsx" style="display:none">
+<p class="meta">Sheet <b>Data</b> berisi semua rekaman, sheet <b>Keterangan</b> berisi daftar kode event. Impor menambahkan baris ke database di HP.</p>
+<button class="d" id="clr" style="margin-top:6px">Hapus semua data</button></div>
+</section>
+<section id="t4" class="tab"><div class="card"><b>Keterangan Kode</b><div id="kd"></div></div></section>
+</main>
+<nav><button class="on" data-t="t1">📝<br>Input</button><button data-t="t2">📊<br>Data</button><button data-t="t3">📤<br>Kirim</button><button data-t="t4">ℹ️<br>Kode</button></nav>
+<div id="toast"></div>
+<script src="xlsx.mini.min.js"></script>
+<script>
+const $=i=>document.getElementById(i);
+const EA=[['MK','Marka Kejut'],['GG','Gorong-gorong'],['PT','Polisi Tidur'],['LP','Lintasan Pipa / Galian Pipa'],['KJ','Kerusakan : Lubang/Patching/Amblas/Alur'],['BO','Batas Overlay'],['BTN','Jalan Beton'],['LNG','Longsoran']];
+const EB=[['B','Berhenti /Macet/Underspeed'],['P','Pasar / Pekerjaan Jalan / Pawai / Blokir'],['TL','Lampu Lalu Lintas'],['S','Simpang ( 3 / 4 / 5 / 6 / 7 )']];
+const DET={KJ:['Lubang','Patching','Amblas','Alur'],S:['3','4','5','6','7']};
+const NM={};EA.concat(EB).forEach(x=>NM[x[0]]=x[1]);
+const kat=k=>EA.some(x=>x[0]===k)?'Event A':'Event B';
+const db=new Promise((r,j)=>{const q=indexedDB.open('survei',1);q.onupgradeneeded=()=>q.result.createObjectStore('c',{keyPath:'id'});q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error)});
+const tx=async(m,f)=>{const d=await db;return new Promise((res,rej)=>{const t=d.transaction('c',m),rq=f(t.objectStore('c'));t.oncomplete=()=>res(rq&&rq.result);t.onerror=()=>rej(t.error)})};
+const all=async()=>(await tx('readonly',s=>s.getAll())).sort((a,b)=>a.ts-b.ts);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const toast=m=>{const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2200)};
+const nowL=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)};
+let kode='',foto='';
+// tabs
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button,.tab').forEach(e=>e.classList.remove('on'));b.classList.add('on');$(b.dataset.t).classList.add('on');if(b.dataset.t==='t2')table()});
+// chips
+function chips(el,list){$(el).innerHTML=list.map(x=>`<button data-k="${x[0]}">${x[0]}<small>${x[1].split(/[:/(]/)[0].trim()}</small></button>`).join('')}
+chips('ca',EA);chips('cb',EB);
+document.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{kode=kode===b.dataset.k?'':b.dataset.k;document.querySelectorAll('.chips button').forEach(x=>x.classList.toggle('on',x.dataset.k===kode));const d=DET[kode];$('dw').style.display=d?'block':'none';if(d){$('dl').textContent=kode==='S'?'Jumlah kaki simpang':'Jenis kerusakan';$('det').innerHTML=d.map(v=>`<option>${v}</option>`).join('')}});
+$('kd').innerHTML='<p class="ev ea">EVENT A</p>'+EA.map(x=>`<p><b>${x[0]}</b> — ${x[1]}</p>`).join('')+'<p class="ev eb">EVENT B</p>'+EB.map(x=>`<p><b>${x[0]}</b> — ${x[1]}</p>`).join('');
+$('fk').innerHTML+=Object.keys(NM).map(k=>`<option>${k}</option>`).join('');
+// sticky fields
+['ruas','sv','arah','sta','wa','em'].forEach(i=>{const v=localStorage.getItem('s_'+i);if(v!==null)$(i).value=v;$(i).addEventListener('input',()=>localStorage.setItem('s_'+i,$(i).value))});
+$('tgl').value=nowL();
+$('plus').onclick=()=>{const m=$('sta').value.match(/^(\d+)\s*\+\s*(\d+)$/);if(!m)return toast('Format STA: 12+350');let k=+m[1],p=+m[2]+100;if(p>=1000){k+=Math.floor(p/1000);p%=1000}$('sta').value=k+'+'+String(p).padStart(3,'0');localStorage.setItem('s_sta',$('sta').value)};
+function gps(ok,err){navigator.geolocation.getCurrentPosition(p=>ok(p.coords.latitude.toFixed(6)+', '+p.coords.longitude.toFixed(6)),err,{enableHighAccuracy:true,timeout:15000,maximumAge:5000})}
+$('bg').onclick=()=>{$('bg').textContent='⏳';gps(v=>{$('gp').value=v;$('bg').textContent='📍 GPS'},e=>{toast('GPS gagal');$('bg').textContent='📍 GPS'})};
+$('ft').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();im.onload=()=>{const k=Math.min(1,1024/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);foto=c.toDataURL('image/jpeg',.7);$('pv').src=foto;$('pv').style.display='block'};im.src=URL.createObjectURL(f)};
+function clearEntry(){kode='';foto='';$('ket').value='';$('gp').value='';$('ft').value='';$('pv').style.display='none';$('dw').style.display='none';document.querySelectorAll('.chips button').forEach(x=>x.classList.remove('on'))}
+$('rst').onclick=clearEntry;
+async function counter(){const n=(await all()).length;$('info').textContent=n+' rekaman tersimpan di perangkat'}
+$('sim').onclick=async()=>{
+ if(!kode)return toast('Pilih kode event dulu');
+ if(!$('sta').value.trim())return toast('Isi STA');
+ let g=$('gp').value;
+ if(!g&&$('auto').checked){$('sim').textContent='⏳ Mengambil GPS...';g=await new Promise(r=>gps(r,()=>r('')))}
+ const x={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),ts:Date.now(),tgl:$('tgl').value||nowL(),ruas:$('ruas').value.trim(),arah:$('arah').value,sta:$('sta').value.trim(),kode,det:DET[kode]?$('det').value:'',ket:$('ket').value.trim(),gp:g,ft:foto,sv:$('sv').value.trim(),sent:0};
+ await tx('readwrite',s=>s.put(x));$('sim').textContent='＋ Simpan & isi lagi';
+ clearEntry();$('tgl').value=nowL();toast('Tersimpan: '+x.kode+' @ STA '+x.sta);counter()};
+// table
+const H=['No','Tanggal','Ruas','Arah','STA','Event','Kode','Nama Event','Detail','Keterangan','Koordinat','Foto','Surveyor','Terkirim'];
+const row=(x,i)=>[i+1,x.tgl.replace('T',' '),x.ruas,x.arah,x.sta,kat(x.kode),x.kode,NM[x.kode]||'',x.det,x.ket,x.gp,x.ft?'Ya':'Tidak',x.sv,x.sent?'Ya':'Belum'];
+async function table(){
+ const q=$('q').value.toLowerCase(),k=$('fk').value;
+ const d=(await all()).filter(x=>(!k||x.kode===k)&&row(x,0).join(' ').toLowerCase().includes(q));
+ $('cnt').textContent=d.length+' baris';
+ $('tb').innerHTML='<tr>'+H.map(h=>`<th>${h}</th>`).join('')+'<th></th></tr>'+d.map((x,i)=>'<tr>'+row(x,i).map((v,j)=>`<td${j===9?' class="w"':''}>${esc(v)}</td>`).join('')+`<td><button class="d" style="padding:3px 8px" onclick="del('${x.id}')">✕</button></td></tr>`).join('')}
+async function del(id){if(confirm('Hapus baris ini?')){await tx('readwrite',s=>s.delete(id));table();counter()}}
+$('q').oninput=table;$('fk').onchange=table;
+// export / share
+async function pick(){let d=await all();if($('bl').checked)d=d.filter(x=>!x.sent);return d}
+function wb(d){const w=XLSX.utils.book_new();const a=[H].concat(d.map(row));const ws=XLSX.utils.aoa_to_sheet(a);ws['!cols']=[5,17,22,7,10,9,7,34,9,34,22,6,14,9].map(w=>({wch:w}));XLSX.utils.book_append_sheet(w,ws,'Data');
+ const k=[['Kode','Keterangan','Event']].concat(EA.map(x=>[x[0],x[1],'Event A']),EB.map(x=>[x[0],x[1],'Event B']));XLSX.utils.book_append_sheet(w,XLSX.utils.aoa_to_sheet(k),'Keterangan');return w}
+const fname=()=>'survei-event-'+new Date().toISOString().slice(0,10)+'.xlsx';
+function file(d){return new File([XLSX.write(wb(d),{type:'array',bookType:'xlsx'})],fname(),{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+function save(f){const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;a.click()}
+async function mark(d){for(const x of d){x.sent=1;await tx('readwrite',s=>s.put(x))}}
+$('dx').onclick=async()=>{const d=await all();if(!d.length)return toast('Belum ada data');save(file(d))};
+$('shf').onclick=async()=>{const d=await pick();if(!d.length)return toast('Tidak ada data untuk dikirim');const f=file(d);
+ if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Data Survei Event Jalan',text:'Data survei event jalan ('+d.length+' baris)'});await mark(d);toast('Terkirim / dibagikan')}catch(e){if(e.name!=='AbortError')toast('Gagal membagikan')}}
+ else{save(f);toast('Berbagi file tidak didukung, file diunduh. Lampirkan manual.')}};
+function ringkas(d){const c={};d.forEach(x=>c[x.kode]=(c[x.kode]||0)+1);const r=d[0]?d[0].ruas:'';
+ return 'Data Survei Event Jalan\n'+(r?'Ruas: '+r+'\n':'')+'Jumlah: '+d.length+' event\n'+Object.keys(c).map(k=>k+': '+c[k]).join(', ')+'\n\n'+d.slice(-30).map(x=>x.sta+' | '+x.kode+(x.det?'('+x.det+')':'')+' | '+(x.ket||'-')+(x.gp?' | '+x.gp:'')).join('\n')}
+$('swa').onclick=async()=>{const d=await pick();if(!d.length)return toast('Tidak ada data');const n=$('wa').value.replace(/\D/g,'');open('https://wa.me/'+n+'?text='+encodeURIComponent(ringkas(d)),'_blank');await mark(d)};
+$('sem').onclick=async()=>{const d=await pick();if(!d.length)return toast('Tidak ada data');location.href='mailto:'+$('em').value+'?subject='+encodeURIComponent('Data Survei Event Jalan')+'&body='+encodeURIComponent(ringkas(d));await mark(d)};
+$('ix').onclick=()=>$('fx').click();
+$('fx').onchange=async e=>{try{const w=XLSX.read(await e.target.files[0].arrayBuffer());const r=XLSX.utils.sheet_to_json(w.Sheets['Data']||w.Sheets[w.SheetNames[0]]);let n=0;
+ for(const o of r){const k=o['Kode'];if(!NM[k])continue;n++;await tx('readwrite',s=>s.put({id:Date.now().toString(36)+n+Math.random().toString(36).slice(2,5),ts:Date.now()+n,tgl:String(o['Tanggal']||nowL()).replace(' ','T'),ruas:o['Ruas']||'',arah:o['Arah']||'Naik',sta:String(o['STA']||''),kode:k,det:String(o['Detail']||''),ket:o['Keterangan']||'',gp:o['Koordinat']||'',ft:'',sv:o['Surveyor']||'',sent:o['Terkirim']==='Ya'?1:0}))}
+ toast(n+' baris diimpor');counter()}catch{toast('File tidak valid')}e.target.value=''};
+$('clr').onclick=async()=>{if(confirm('Hapus SEMUA data di HP ini? Pastikan sudah diunduh.')){await tx('readwrite',s=>s.clear());counter();toast('Data dihapus')}};
+const upd=()=>$('st').textContent=navigator.onLine?'● online':'● offline';addEventListener('online',upd);addEventListener('offline',upd);upd();
+let dp;addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;$('bar').style.display='block'});
+$('ins').onclick=async()=>{if(dp){dp.prompt();await dp.userChoice;dp=null;$('bar').style.display='none'}};
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+counter();
+</script></body></html>
